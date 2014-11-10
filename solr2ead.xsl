@@ -138,7 +138,7 @@
               <xsl:value-of select="field[@name = 'display_date']/normalize-space()" />
           </unitdate>
           <unitid type="irn">
-              http://collections.ushmm.org/search/catalog/irn<xsl:value-of select="field[@name = 'irn']/normalize-space()" />
+              irn<xsl:value-of select="field[@name = 'id']/normalize-space()" />
           </unitid>
           <xsl:if test="$rg != ''">
               <unitid type="rg_number" label="Record group number">
