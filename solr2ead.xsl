@@ -19,7 +19,7 @@
       <!-- Work on top-level <doc>s:
            - <doc> without assoc_parent_irn field
            - <doc> with assoc_parent_irn that does not match any existing <doc>'s irn -->
-      <xsl:apply-templates select="doc[not(field[@name = 'assoc_parent_irn']/text()) or not(//doc/field[@name = 'irn'] = field[@name = 'assoc_parent_irn'])]" />
+      <xsl:apply-templates select="doc[not(field[@name = 'assoc_parent_irn']/text()) or not(//doc/field[@name = 'irn'] = field[@name = 'assoc_parent_irn'])][field[@name='record_type'] != 'Object']" />
   </xsl:template>
   
   <xsl:template match="doc">
@@ -138,7 +138,7 @@
               <xsl:value-of select="field[@name = 'display_date']/normalize-space()" />
           </unitdate>
           <unitid type="irn">
-              irn<xsl:value-of select="field[@name = 'id']/normalize-space()" />
+              <xsl:value-of select="field[@name = 'id']/normalize-space()" />
           </unitid>
           <xsl:if test="$rg != ''">
               <unitid type="rg_number" label="Record group number">
