@@ -30,9 +30,6 @@
           <xsl:call-template name="header"/>
           <xsl:call-template name="fm"/>
           <xsl:call-template name="description_with_dsc"/>
-          <!-- if we call apply-templates for 'the rest', make sure we don't create duplicates -->
-<!--           <xsl:apply-templates select="field[not(@name=('conditions_access','conditions_use','funding_note','arrangement','creator_name','creator_role','finding_aid_provenance','historical_provenance'))]"/> -->
-          
         </ead>
       </xsl:result-document>
   </xsl:template>
@@ -42,9 +39,7 @@
       <xsl:variable name="convertdatetime" select="current-dateTime()" />
       <xsl:variable name="convertdate" select="current-date()" />
       <eadheader>
-          <eadid>
-              <xsl:value-of select="field[@name = 'id']/normalize-space()" />
-          </eadid>
+          <eadid><xsl:value-of select="field[@name = 'id']/normalize-space()" />#eng</eadid>
           <filedesc>
               <titlestmt>
                   <titleproper>
@@ -122,7 +117,7 @@
           
           <!-- DEBUG -->
 <!--           <xsl:message select="trace($names, 'names: ')"/> -->
-          
+
           <!-- Lists of roles are lower case, make sure to check lower case strings against these lists -->
           <xsl:variable name="creator_roles" select="('artist','publisher','author','issuer','manufacturer','distributor','producer','photographer','designer','agent','maker','compiler','creator','editor','engraver')"/>
           <xsl:variable name="subject_roles" select="('subject')"/>
@@ -150,10 +145,9 @@
                   <xsl:value-of select="$acc_num" />
               </unitid>
           </xsl:if>
-          
+
 
         <!-- origination (can be empty) -->
-        
         <origination>
             <xsl:for-each select="$creator_name">
                 <xsl:variable name="i" select="position()"/>
@@ -204,31 +198,18 @@
                 </extent>
               </xsl:for-each>
 
-              <xsl:variable name="extent" select="field[@name = 'extent']/normalize-space()" />
-              <xsl:for-each select="$extent">
-                  <extent>
-                      <xsl:copy-of select="$extent" />
-                  </extent>
-              </xsl:for-each>
+              <!-- extent -->
+              <xsl:apply-templates select="field[@name = 'extent']" />
 
-              <xsl:variable name="dimensions" select="field[@name = 'dimensions']/normalize-space()" />
-              <xsl:for-each select="$dimensions">
-                  <dimensions>
-                      <xsl:copy-of select="$dimensions" />
-                  </dimensions>
-              </xsl:for-each>
-              <xsl:variable name="material_composition" select="field[@name = 'material_composition']/normalize-space()" />
-              <xsl:for-each select="$material_composition">
-                  <physfacet>
-                      <xsl:copy-of select="$material_composition" />
-                  </physfacet>
-              </xsl:for-each>
-              <xsl:variable name="object_type" select="field[@name = 'object_type']/normalize-space()" />
-              <xsl:for-each select="$object_type">
-                  <physfacet>
-                      <xsl:copy-of select="$object_type" />
-                  </physfacet>
-              </xsl:for-each>
+              <!-- dimensions -->
+              <xsl:apply-templates select="field[@name = 'dimensions']" />
+
+              <!-- physfacet -->
+              <xsl:apply-templates select="field[@name = 'material_composition']" />
+
+              <!-- physfacet -->
+              <xsl:apply-templates select="field[@name = 'object_type']" mode="physfacet" />
+
           </physdesc>
           <langmaterial>
               <xsl:for-each select="field[@name = 'language']">
@@ -239,8 +220,7 @@
 
       <!-- arrangement -->
       <xsl:apply-templates select="field[@name = 'arrangement']" />
-      
-      
+
       <!-- custodhist -->
       <xsl:variable name="provenance" select="field[@name = 'provenance']/normalize-space()" />
       <xsl:if test="not(empty(($provenance, $creator_role[lower-case(text()) = $custodial_roles])))">
@@ -266,7 +246,6 @@
       <xsl:variable name="credit" select="field[@name = 'acq_credit']/normalize-space()" />
       <xsl:if test="not(empty(($accession, $source, $credit)))">
           <acqinfo>
-    
               <xsl:if test="$accession != ''">
                   <p>Accession number: <xsl:copy-of select="$accession" /></p>
               </xsl:if>
@@ -466,41 +445,65 @@
           </xsl:for-each>
       </userestrict>
     </xsl:template>
-    
+
     <xsl:template match="field[@name = 'object_type']">
       <odd>
           <p>Object type: <xsl:value-of select="./normalize-space()" /></p>
       </odd>
     </xsl:template>
-    
+
     <xsl:template match="field[@name = 'record_type']">
       <odd>
           <p>Record type: <xsl:value-of select="./normalize-space()" /></p>
       </odd>
     </xsl:template>
-    
+
     <xsl:template match="field[@name = 'classification']">
       <odd>
           <p>EMU Classification: <xsl:value-of select="./normalize-space()" /></p>
       </odd>
     </xsl:template>
-    
+
     <xsl:template match="field[@name = 'emu_category']">
       <odd>
           <p>EMU Category: <xsl:value-of select="./normalize-space()" /></p>
       </odd>
     </xsl:template>
-    
+
     <xsl:template match="field[@name = 'arrangement']">
         <arrangement>
             <p><xsl:value-of select="normalize-space(.)" /></p>
         </arrangement>
     </xsl:template>
-    
+
+    <xsl:template match="field[@name = 'extent']">
+      <extent>
+          <xsl:value-of select="normalize-space(.)" />
+      </extent>
+    </xsl:template>
+
     <xsl:template match="field[@name = 'funding_note']">
         <note>
             <p><xsl:copy-of select="normalize-space(.)"/></p>
         </note>
+    </xsl:template>
+
+    <xsl:template match="field[@name = 'dimensions']">
+      <dimensions>
+          <xsl:value-of select="normalize-space(.)" />
+      </dimensions>
+    </xsl:template>
+
+    <xsl:template match="field[@name = 'material_composition']">
+      <physfacet>
+          <xsl:value-of select="normalize-space(.)" />
+      </physfacet>
+    </xsl:template>
+
+    <xsl:template match="field[@name = 'object_type']" mode="physfacet">
+      <physfacet>
+          <xsl:value-of select="normalize-space(.)" />
+      </physfacet>
     </xsl:template>
 
   <!-- get rid of any trailing content or structure-->
